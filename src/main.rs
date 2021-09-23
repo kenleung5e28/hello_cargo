@@ -34,7 +34,7 @@ impl<T: PartialOrd> BSTNode<T> {
             v.push(curr);
             match &curr.left {
                 None => break,
-                Some(n) => curr = n.as_ref(),
+                Some(n) => curr = n
             }
         }
         v
