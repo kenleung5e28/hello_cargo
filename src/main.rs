@@ -22,36 +22,46 @@ impl<T: PartialOrd> BSTNode<T> {
             }
         }
     }
+
+    pub fn inorder_iter(&self) -> BSTInorderIter<T> {
+        BSTInorderIter::new(&self)
+    }
+
+    fn add_lefts(&self) -> Vec<&Self> {
+        let mut v = Vec::new();
+        let mut curr = self;
+        loop {
+            v.push(curr);
+            match &curr.left {
+                None => break,
+                Some(n) => curr = n.as_ref(),
+            }
+        }
+        v
+    }
 }
 
 pub struct BSTInorderIter<'a, T : PartialOrd> {
-    queue: Vec<&'a T>,
+    queue: Vec<&'a BSTNode<T>>,
 }
 
 impl<'a, T : PartialOrd> BSTInorderIter<'a, T> {
-    pub fn new() -> Self {
-        Self { queue: vec![] }
+    pub fn new(node: &'a BSTNode<T>) -> Self {
+        Self { queue: node.add_lefts() }
     }
 } 
 
 impl<'a, T : PartialOrd> Iterator for BSTInorderIter<'a, T> {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
-        
-    } 
-}
-
-fn add_lefts<T : PartialOrd>(t: &BSTNode<T>) -> Vec<&T> {
-    let mut v = Vec::new();
-    let mut curr = t;
-    loop {
-        v.push(&curr.val);
-        match &curr.left {
-            None => break,
-            Some(n) => curr = n.as_ref(),
-        }
+        self.queue.pop().map(|curr| {
+            match &curr.right {
+                None => {},
+                Some(node) => self.queue.append(&mut node.add_lefts())
+            }
+            &curr.val
+        })
     }
-    v
 }
 
 fn main() {
@@ -59,7 +69,7 @@ fn main() {
    x.add(33);
    x.add(100);
    x.add(200);
-   let v = add_lefts(&x);
-   println!("{:?}", v);
-   println!("Some element: {}", x.left.map_or(0, |y| y.right.map_or(0, |z| z.val)));
+   for value in x.inorder_iter() {
+       println!("{}", value);
+   }
 }
